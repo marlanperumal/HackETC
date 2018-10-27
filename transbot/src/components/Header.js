@@ -1,5 +1,11 @@
 import React from 'react'
+import { Navbar, NavbarBrand } from 'reactstrap'
 
 const Header = () => (
-    <div className="header">transbot</div>
+    <Navbar color="light" light>
+        <img src="..." alt="..." class="rounded-circle"></img>
+        <NavbarBrand>Transbot</NavbarBrand>
+    </Navbar>
 )
+
+export default Header

@@ -6,8 +6,6 @@ html, body{
 #container{
   background: #6bd3bc;
   display: grid;
-  height: 500px; 
-  width: 300px;
   grid-template-columns: repeat(12, 1fr);
   grid-template-rows: repeat(15, 1fr);
 }
