@@ -20,7 +20,7 @@ class Footer extends Component {
 
     onSubmit = (e) => {
         e.preventDefault()
-        this.props.onSubmit("right", this.state.input)
+        this.props.onSubmit(this.state.input)
         this.setState({
             input: ""
         })
