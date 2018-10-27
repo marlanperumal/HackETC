@@ -112,3 +112,5 @@ venv.bak/
 *.bak
 *.list
 *.json
+!backend/requirements.txt
+*.code-workspace
