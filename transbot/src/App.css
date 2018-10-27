@@ -1,41 +1,20 @@
-
-html, body{
+html, body {
+  height: 100%;
   margin: 0;
-  padding: 0;
-}
-#container{
-  background: #6bd3bc;
-  display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  grid-template-rows: repeat(15, 1fr);
-}
-#input{
-  grid-row: 15/16;
-  grid-column: 1/10;
-  background: #6bd370;
-}
-#header{
-  grid-row: 1/2;
-  grid-column: 1/13;
-  background: #5d1d70;
-}
-#voice{
-  grid-row: 15/16;
-  grid-column: 11/13;
-  background: #9b59d8;
-}
-#messages{
-  grid-row: 2/15;
-  grid-column: 1/13;
-  background: #ccc;
-  overflow: auto;
 }
 
-p{
-  background: #ff0000;
-  text-align: right;
+#chat-area {
+  padding-top: 15px;
+  background-color: lightgray;
+  height: 100%;
+  overflow: scroll;
 }
-p:nth-child(odd){
-  background: green;
-  text-align: left;
+
+.App, #root {
+  height: 90%;
+  background-color: red;
+}
+
+footer {
+  padding-top: 4px
 }
