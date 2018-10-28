@@ -3,6 +3,7 @@ from flask_cors import CORS
 import datetime
 import requests
 from time import sleep
+import json
 
 app = Flask(__name__)
 CORS(app)
@@ -57,8 +58,12 @@ def get_wimt_route(start_point=[27.984117, -26.145339], end_point=[27.906734, -2
     print(r.status_code)
     journey = r.json()
     itinerary = journey["itineraries"][0]
+    with open("demo_itinerary.json", "w") as f:
+        json.dump(itinerary, f)
 
-    
+    # with open("demo_itinerary.json", "r") as f:
+    #     itinerary = json.load(f)
+
     legs = itinerary["legs"]
     start_reply = []
     directions = []
@@ -144,7 +149,7 @@ def parse_message():
             leg_directions = data["legs"][current_leg]
             current_leg += 1
         else:
-            leg_directions = ["End Route"]
+            leg_directions = ["You're there!"]
 
         response = {
             "reply": leg_directions,
