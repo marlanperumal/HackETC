@@ -19,15 +19,17 @@ class ChatArea extends Component {
     }
 
     render() {
-        const { messages } = this.props
+        const { messages, typing} = this.props
         return (
             <div id="chat-area">
                 <Container>
+                    
                     {messages.map((message, i) => (
                         message.side === "left" ?
                         <LeftMessage key={i} text={message.text}/> :
                         <RightMessage key={i} text={message.text}/>
                     ))}
+                    {typing ? "UDrive is typing..." : " "}
                     <div style={{ float:"left", clear: "both" }}
                         ref={(el) => { this.messagesEnd = el;}}>
                     </div>
