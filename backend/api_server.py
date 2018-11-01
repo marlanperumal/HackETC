@@ -31,12 +31,13 @@ def get_wimt_token():
 
     r = requests.post( 'https://identity.whereismytransport.com/connect/token', data=payload)
     if r.status_code != 200:
-        raise Exception("Failed to get token")
+        return None
 
     access_token = r.json()['access_token']
     return access_token
 
-def get_wimt_route(start_point=[27.984117, -26.145339], end_point=[27.906734, -26.237348]):
+def get_wimt_route(start_point, end_point, retry=0, max_retries=2):
+    global access_token
     platformApiUrl = "https://platform.whereismytransport.com/api"
 
     headers = {
@@ -56,6 +57,22 @@ def get_wimt_route(start_point=[27.984117, -26.145339], end_point=[27.906734, -2
 
     r = requests.post("{ROOT}/journeys".format(ROOT=platformApiUrl), json=body, headers=headers)
     print(r.status_code)
+
+    if r.status_code < 300:
+        return r
+    elif retry < max_retries:
+        access_token = get_wimt_token()
+        print(access_token)
+        r = get_wimt_route(start_point, end_point, retry=retry+1)
+        return r
+    else:
+        return None
+        
+
+def build_route(start_point=[27.984117, -26.145339], end_point=[27.906734, -26.237348]):
+    r = get_wimt_route(start_point, end_point)
+    if r is None:
+        return ["Oops! Something went wrong..."], []
     journey = r.json()
     itinerary = journey["itineraries"][0]
     with open("demo_itinerary.json", "w") as f:
@@ -130,7 +147,7 @@ def parse_message():
             "reply": ["This is just a demo so type \"Go\" to get a route from Cresta Mall to 23 Vilakazi Street"]
         }
     elif method == "go":
-        start_reply, legs = get_wimt_route()
+        start_reply, legs = build_route()
         response = {
             "reply": start_reply,
             "legs": legs,
@@ -163,5 +180,5 @@ def parse_message():
     return jsonify(response)
 
 # access_token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjkwODQ2MkI2MDVEM0NCNEVDQzQ1RDYyMjQwNDMwOTZGODBENjQ2QzMiLCJ0eXAiOiJKV1QiLCJ4NXQiOiJrSVJpdGdYVHkwN01SZFlpUUVNSmI0RFdSc00ifQ.eyJuYmYiOjE1NDA3MTQ5NTMsImV4cCI6MTU0MDcxODU1MywiaXNzIjoiaHR0cHM6Ly9pZGVudGl0eS53aGVyZWlzbXl0cmFuc3BvcnQuY29tIiwiYXVkIjoiaHR0cHM6Ly9pZGVudGl0eS53aGVyZWlzbXl0cmFuc3BvcnQuY29tL3Jlc291cmNlcyIsImNsaWVudF9pZCI6IjQzNTg1NjQ2LTMzNjYtNDQ0MC05NjA0LTdiNDZhMTcyNDkzMyIsImNsaWVudF90ZW5hbnQiOiIwM2QyZGUyOS03MTRjLTRhMjktYWVmMi05MTBmN2Y3ZmFiMmYiLCJqdGkiOiJmNWFkMWEwMzg1MzU1MjA4YTA2ODMyZGVmYmQyMTQ2NCIsInNjb3BlIjpbInRyYW5zcG9ydGFwaTphbGwiXX0.IyWEOBV2jJuZZTNlqkylZx9dPeVKxGVfCOZwFZNxAhAnXgqXxhp0hSGc1-DSezuYDzfnDJ9k8Mjd1QPjxK5I9PmL6Pr0zSIraJopOzNHSql5CnCg_fwJCtz9ZtuF6H82423fUiR31KRn_PTWiEjpXaN5Dp5twRBuv5klAPecstoqoHH_oXnyaZDN6VtLuuYGDxbUkiTMBSKyn8reZAP2cFx1PWe1EvN9hmEJhVMQCiI0fElc2aq8TdMeJTo7U-cqZIg6Pb79UzEWw562Xsl1BbrP9zL6IjrEA28McqnH-E-Jkuqn9sQleG-UYOs_7m7f7_Eu61sFUTU8pafkDeM08g"
-access_token = get_wimt_token()
+access_token = "" #get_wimt_token()
 print(access_token)
