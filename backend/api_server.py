@@ -4,6 +4,11 @@ import datetime
 import requests
 from time import sleep
 import json
+import logging
+import os
+import dotenv
+
+logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
 CORS(app)
@@ -16,11 +21,8 @@ mode_icon = {
 }
 
 def get_wimt_token():
-     # http://docs.python-requests.org/
-
-    # replace with your client information: developer.whereismytransport.com/clients
-    CLIENT_ID = '43585646-3366-4440-9604-7b46a1724933' 
-    CLIENT_SECRET = 'w1L3g4PXLlDznw8rFkCJaTQYi9Q16QwFW+BeEQ/6Wmw='
+    CLIENT_ID = os.getenv("CLIENT_ID") 
+    CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 
     payload = {
         "client_id": CLIENT_ID,
@@ -55,17 +57,20 @@ def get_wimt_route(start_point, end_point, retry=0, max_retries=2):
         }
     }
 
+    logging.info(f"Getting route from {start_point} to {end_point}")
     r = requests.post("{ROOT}/journeys".format(ROOT=platformApiUrl), json=body, headers=headers)
-    print(r.status_code)
 
     if r.status_code < 300:
+        logging.info("Got route successfully")
         return r
     elif retry < max_retries:
+        logging.info("Access token expired. Trying to get another one")
         access_token = get_wimt_token()
-        print(access_token)
+        logging.info("Trying to get route again")
         r = get_wimt_route(start_point, end_point, retry=retry+1)
         return r
     else:
+        logging.info("Tried too many times. Giving up")
         return None
         
 
@@ -73,14 +78,9 @@ def build_route(start_point=[27.984117, -26.145339], end_point=[27.906734, -26.2
     r = get_wimt_route(start_point, end_point)
     if r is None:
         return ["Oops! Something went wrong..."], []
+
     journey = r.json()
     itinerary = journey["itineraries"][0]
-    with open("demo_itinerary.json", "w") as f:
-        json.dump(itinerary, f)
-
-    # with open("demo_itinerary.json", "r") as f:
-    #     itinerary = json.load(f)
-
     legs = itinerary["legs"]
     start_reply = []
     directions = []
@@ -142,6 +142,7 @@ def parse_message():
     method = message.split()[0].lower()
     info = " ".join(message.split()[1:])
     response = {}
+    logging.info(f"Received instruction {method} {info}")
     if method == "help":
         response = {
             "reply": ["This is just a demo so type \"Go\" to get a route from Cresta Mall to 23 Vilakazi Street"]
@@ -179,6 +180,5 @@ def parse_message():
 
     return jsonify(response)
 
-# access_token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjkwODQ2MkI2MDVEM0NCNEVDQzQ1RDYyMjQwNDMwOTZGODBENjQ2QzMiLCJ0eXAiOiJKV1QiLCJ4NXQiOiJrSVJpdGdYVHkwN01SZFlpUUVNSmI0RFdSc00ifQ.eyJuYmYiOjE1NDA3MTQ5NTMsImV4cCI6MTU0MDcxODU1MywiaXNzIjoiaHR0cHM6Ly9pZGVudGl0eS53aGVyZWlzbXl0cmFuc3BvcnQuY29tIiwiYXVkIjoiaHR0cHM6Ly9pZGVudGl0eS53aGVyZWlzbXl0cmFuc3BvcnQuY29tL3Jlc291cmNlcyIsImNsaWVudF9pZCI6IjQzNTg1NjQ2LTMzNjYtNDQ0MC05NjA0LTdiNDZhMTcyNDkzMyIsImNsaWVudF90ZW5hbnQiOiIwM2QyZGUyOS03MTRjLTRhMjktYWVmMi05MTBmN2Y3ZmFiMmYiLCJqdGkiOiJmNWFkMWEwMzg1MzU1MjA4YTA2ODMyZGVmYmQyMTQ2NCIsInNjb3BlIjpbInRyYW5zcG9ydGFwaTphbGwiXX0.IyWEOBV2jJuZZTNlqkylZx9dPeVKxGVfCOZwFZNxAhAnXgqXxhp0hSGc1-DSezuYDzfnDJ9k8Mjd1QPjxK5I9PmL6Pr0zSIraJopOzNHSql5CnCg_fwJCtz9ZtuF6H82423fUiR31KRn_PTWiEjpXaN5Dp5twRBuv5klAPecstoqoHH_oXnyaZDN6VtLuuYGDxbUkiTMBSKyn8reZAP2cFx1PWe1EvN9hmEJhVMQCiI0fElc2aq8TdMeJTo7U-cqZIg6Pb79UzEWw562Xsl1BbrP9zL6IjrEA28McqnH-E-Jkuqn9sQleG-UYOs_7m7f7_Eu61sFUTU8pafkDeM08g"
-access_token = "" #get_wimt_token()
+access_token = ""
 print(access_token)

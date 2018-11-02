@@ -20,10 +20,13 @@ class Footer extends Component {
 
     onSubmit = (e) => {
         e.preventDefault()
-        this.props.onSubmit(this.state.input)
-        this.setState({
-            input: ""
-        })
+        const { input } = this.state
+        if (input.length > 0) {
+            this.props.onSubmit(input)
+            this.setState({
+                input: ""
+            })
+        }
     }
     
     render() {

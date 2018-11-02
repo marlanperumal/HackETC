@@ -23,7 +23,7 @@ nav {
 #chat-area {
   padding: 95px 0 60px 0;
   height: 100%;
-  overflow: scroll;
+  /* overflow: scroll; */
 }
 
 #chat-area .alert {

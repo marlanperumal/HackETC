@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 const Header = () => (
     <Navbar color="light" light>
-        <FontAwesomeIcon icon={["fab", "creative-commons-by"]} size="4x"/>
+        <FontAwesomeIcon icon={["fab", "creative-commons-by"]} size="2x"/>
         <NavbarBrand>UDrive</NavbarBrand>
     </Navbar>
 )
