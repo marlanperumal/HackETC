@@ -24,8 +24,10 @@ class App extends Component {
                     text: "Hi James - I'm UDrive! Where would you like to go today?"
                 },
             ],
-            origin: "",
-            destination: "",
+            origin_address: "Cresta Mall",
+            origin_location: [27.984117, -26.145339],
+            destination_address: "23 Vilakazi Street",
+            desination_location: [27.906734, -26.237348],
             priority: "cost",
             leave_time: "now",
             arrive_time: null,
@@ -36,9 +38,9 @@ class App extends Component {
     }
 
     getReply = (message) => {
-        const { origin, destination, priority, leave_time, arrive_time, legs, current_leg } = this.state
+        const { origin_address, origin_location, destination_address, destination_location, priority, leave_time, arrive_time, legs, current_leg } = this.state
         const data = {
-            message, origin, destination, priority, leave_time, arrive_time, legs, current_leg
+            message, origin_address, origin_location, destination_address, destination_location, priority, leave_time, arrive_time, legs, current_leg
         }
         return fetch(`${backend_host}/message`, {
             method: "POST",

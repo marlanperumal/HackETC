@@ -82,9 +82,11 @@ def build_route(start_point=[27.984117, -26.145339], end_point=[27.906734, -26.2
     journey = r.json()
     itinerary = journey["itineraries"][0]
     legs = itinerary["legs"]
+    num_legs = len(legs)
     start_reply = []
     directions = []
     start_reply.append("Start Route")
+    start_reply.append(f"Legs: {num_legs}")
 
     distance = itinerary["distance"]["value"]/1000
     duration = itinerary["duration"]
@@ -133,6 +135,19 @@ def build_route(start_point=[27.984117, -26.145339], end_point=[27.906734, -26.2
     
     return start_reply, directions
 
+def get_coords_from_address(address):
+    address = "+".join(address.split(" "))
+    GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
+    country = "ZA"
+    url = f"https://maps.googleapis.com/maps/api/geocode/json?address={address}&key={GOOGLE_MAPS_API_KEY}&components=country:{country}"
+    response = requests.get(url)
+    r = response.json()
+    result = r["results"][0]
+    formatted_address = result["formatted_address"]
+    lng = result["geometry"]["location"]["lng"]
+    lat = result["geometry"]["location"]["lat"]
+    return formatted_address, [lng, lat]
+
 
 @app.route("/message", methods=["POST"])
 def parse_message():
@@ -147,8 +162,31 @@ def parse_message():
         response = {
             "reply": ["This is just a demo so type \"Go\" to get a route from Cresta Mall to 23 Vilakazi Street"]
         }
+    elif method == "from":
+        address, location = get_coords_from_address(info)
+        response = {
+            "reply": [
+                f"Leaving from {address}"
+            ],
+            "origin_address": address,
+            "origin_location": location
+        }
+    elif method == "to":
+        address, location = get_coords_from_address(info)
+        response = {
+            "reply": [
+                f"Going to {address}"
+            ],
+            "destination_address": address,
+            "destination_location": location
+        }
     elif method == "go":
-        start_reply, legs = build_route()
+        origin_address = data["origin_address"]
+        origin_location = data["origin_location"]
+        destination_address = data["destination_address"]
+        destination_location = data["destination_location"]
+        start_reply, legs = build_route(origin_location, destination_location)
+        start_reply = [f"Route found from {origin_address} to {destination_address}"] + start_reply
         response = {
             "reply": start_reply,
             "legs": legs,
