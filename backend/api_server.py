@@ -141,7 +141,11 @@ def get_coords_from_address(address):
     country = "ZA"
     url = f"https://maps.googleapis.com/maps/api/geocode/json?address={address}&key={GOOGLE_MAPS_API_KEY}&components=country:{country}"
     response = requests.get(url)
+    
+    if response.status_code > 300 or response.json()["status"] != "OK":
+        return None, None
     r = response.json()
+    logging.info(r["status"])
     result = r["results"][0]
     formatted_address = result["formatted_address"]
     lng = result["geometry"]["location"]["lng"]
@@ -160,26 +164,42 @@ def parse_message():
     logging.info(f"Received instruction {method} {info}")
     if method == "help":
         response = {
-            "reply": ["This is just a demo so type \"Go\" to get a route from Cresta Mall to 23 Vilakazi Street"]
+            "reply": [
+                "This is just a demo so you have to be very specific for now",
+                "Send a message starting with 'From' and then your origin, another message starting with 'To' and then your destination and then finally a third message saying 'Go'. Here's an example.",
+                "From Cresta Mall",
+                "To 23 Vilakazi Street",
+                "Go"
+            ]
         }
     elif method == "from":
         address, location = get_coords_from_address(info)
-        response = {
-            "reply": [
-                f"Leaving from {address}"
-            ],
-            "origin_address": address,
-            "origin_location": location
-        }
+        if address is None:
+            response = {
+                "reply": ["I can't seem to find that address. Can you be more specific?"]
+            }
+        else:
+            response = {
+                "reply": [
+                    f"Leaving from {address}"
+                ],
+                "origin_address": address,
+                "origin_location": location
+            }
     elif method == "to":
         address, location = get_coords_from_address(info)
-        response = {
-            "reply": [
-                f"Going to {address}"
-            ],
-            "destination_address": address,
-            "destination_location": location
-        }
+        if address is None:
+            response = {
+                "reply": ["I can't seem to find that address. Can you be more specific?"]
+            }
+        else:
+            response = {
+                "reply": [
+                    f"Going to {address}"
+                ],
+                "destination_address": address,
+                "destination_location": location
+            }
     elif method == "go":
         origin_address = data["origin_address"]
         origin_location = data["origin_location"]
