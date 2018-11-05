@@ -1,8 +1,7 @@
 import React, { Component } from 'react'
 import { Container } from 'reactstrap'
 
-import LeftMessage from './LeftMessage' 
-import RightMessage from './RightMessage' 
+import Message from './Message' 
 
 
 class ChatArea extends Component {
@@ -23,11 +22,8 @@ class ChatArea extends Component {
         return (
             <div id="chat-area">
                 <Container>
-                    
                     {messages.map((message, i) => (
-                        message.side === "left" ?
-                        <LeftMessage key={i} text={message.text}/> :
-                        <RightMessage key={i} text={message.text}/>
+                        <Message key={i} {...message}/>
                     ))}
                     {typing ? "UDrive is typing..." : " "}
                     <div style={{ float:"left", clear: "both" }}
