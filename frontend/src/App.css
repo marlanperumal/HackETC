@@ -3,7 +3,7 @@ html, body {
   margin: 0;
   background-color: lightgray;
   background: url(img/whatsapp_bg.png);
-  background-size: 60%; 
+  background-size: 60%;
   background-attachment: fixed;
 }
 
@@ -23,7 +23,7 @@ nav {
 #chat-area {
   padding: 95px 0 60px 0;
   height: 100%;
-  /* overflow: scroll; */
+  overflow: none;
 }
 
 #chat-area .alert {
