@@ -1,20 +1,50 @@
 html, body {
   height: 100%;
   margin: 0;
+  background-color: lightgray;
+  background: url(img/whatsapp_bg.png);
+  background-size: 60%; 
+  background-attachment: fixed;
+}
+
+nav {
+  position: fixed;
+  display: table-row;
+  width: 100%;
+  top: 0px;
+  z-index: 100;
+  border-bottom: 1px solid rgba(158, 158, 158, 0.3);
+}
+
+.navbar {
+  position: fixed;
 }
 
 #chat-area {
-  padding-top: 15px;
-  background-color: lightgray;
+  padding: 95px 0 60px 0;
   height: 100%;
-  overflow: scroll;
+  overflow: none;
 }
 
-.App, #root {
-  height: 90%;
-  background-color: red;
+#chat-area .alert {
+  border: 1px solid rgba(158, 158, 158, 0.4);
 }
 
 footer {
-  padding-top: 9px
+  display: table-row;
+  position: fixed;
+  bottom: 0px;
+  padding: 10px 0 0;
+  height: 60px;
+  width: 100%;
+  background: #fff;
+  border-top: 1px solid rgba(158, 158, 158, 0.5);
+}
+
+footer input.form-control {
+  height: 40px;
+}
+
+footer .fa-arrow-alt-circle-right {
+  margin: 4px 5px 0 -5px;
 }
