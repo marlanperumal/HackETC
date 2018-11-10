@@ -9,6 +9,9 @@ flask-cors = "*"
 requests = "*"
 python-dotenv = "*"
 gunicorn = "*"
+twilio = "*"
+ipykernel = "*"
+redis = "*"
 
 [dev-packages]
 

@@ -7,11 +7,20 @@ import json
 import logging
 import os
 import dotenv
+from redis import StrictRedis
+from twilio.twiml.messaging_response import MessagingResponse
+from twilio.rest import Client
 
 logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
 CORS(app)
+
+twilio_account = os.getenv("TWILIO_ACCOUNT")
+twilio_token = os.getenv("TWILIO_TOKEN")
+twilio_client = Client(twilio_account, twilio_token)
+
+rds = StrictRedis(decode_responses=True)
 
 mode_icon = {
     "Bus": "🚌",
@@ -153,11 +162,7 @@ def get_coords_from_address(address):
     return formatted_address, [lng, lat]
 
 
-@app.route("/message", methods=["POST"])
-def parse_message():
-    sleep(0.5)
-    data = request.json
-    message = data["message"]
+def parse_message(user_key, message, data=None):
     method = message.split()[0].lower()
     info = " ".join(message.split()[1:])
     response = {}
@@ -179,6 +184,7 @@ def parse_message():
                 "reply": ["I can't seem to find that address. Can you be more specific?"]
             }
         else:
+            rds.hmset(user_key, {"origin_address": address, "origin_location": json.dumps(location)})
             response = {
                 "reply": [
                     f"Leaving from {address}"
@@ -193,6 +199,7 @@ def parse_message():
                 "reply": ["I can't seem to find that address. Can you be more specific?"]
             }
         else:
+            rds.hmset(user_key, {"destination_address": address, "destination_location": json.dumps(location)})
             response = {
                 "reply": [
                     f"Going to {address}"
@@ -207,6 +214,7 @@ def parse_message():
         destination_location = data["destination_location"]
         start_reply, legs = build_route(origin_location, destination_location)
         start_reply = [f"Route found from {origin_address} to {destination_address}"] + start_reply
+        rds.hmset(user_key, {"legs": json.dumps(legs), "current_leg": 0})
         response = {
             "reply": start_reply,
             "legs": legs,
@@ -226,7 +234,7 @@ def parse_message():
             current_leg += 1
         else:
             leg_directions = ["You're there!"]
-
+        rds.hset(user_key, "current_leg", current_leg)
         response = {
             "reply": leg_directions,
             "current_leg": current_leg
@@ -234,9 +242,50 @@ def parse_message():
     else:
         response = {
             "reply": ["Sorry I didn't understand that. Type \"Help\" to learn what I can do."] 
-        }   
+        }
 
+    return response  
+
+
+@app.route("/message", methods=["POST"])
+def reply_message():
+    sleep(0.5)
+    data = request.json
+    message = data["message"]
+    
+    response = parse_message(message, data)
     return jsonify(response)
 
 access_token = ""
 print(access_token)
+
+@app.route("/whatsapp_message", methods=["POST"])
+def parse_whatsapp_message():
+    user_id = request.values.get('From', 'anonymous')
+    user_key = f'user:{user_id}'
+    data = rds.hgetall(user_key)
+    for key in data:
+        if key in ["origin_location", "destination_location", "legs"]:
+            data[key] = json.loads(data[key])
+
+    logging.info(data)
+
+    message = request.values.get('Body', None)
+    reply = "\n\n".join(parse_message(user_key, message, data)["reply"])
+
+    resp = MessagingResponse()
+
+    resp.message(reply)
+
+    return str(resp)
+
+@app.route("/whatsapp_status", methods=["POST"])
+def parse_whatsapp_status():
+    message_sid = request.values.get('MessageSid', None)
+    message_status = request.values.get('MessageStatus', None)
+    logging.info('SID: {}, Status: {}'.format(message_sid, message_status))
+
+    return ('', 204)
+
+    return str(resp)
+
